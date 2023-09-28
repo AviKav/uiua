@@ -380,6 +380,26 @@ pub fn Editor<'a>(
         }
     };
 
+    window_event_listener(ev::input, move |event| {
+        let event = event.dyn_ref::<web_sys::InputEvent>().unwrap();
+        let focused = event
+            .target()
+            .and_then(|t| t.dyn_into::<HtmlDivElement>().ok())
+            .is_some_and(|t| t.id() == code_id());
+        if !focused {
+            return;
+        };
+        match event.input_type().as_str() {
+            "historyUndo" => {
+                state().undo();
+            }
+            "historyRedo" => {
+                state().redo();
+            }
+            _ => ()
+        }
+    });
+    
     // Handle key events
     window_event_listener(keydown, move |event| {
         let event = event.dyn_ref::<web_sys::KeyboardEvent>().unwrap();
@@ -508,10 +528,6 @@ pub fn Editor<'a>(
                 _ = window().navigator().clipboard().unwrap().write_text(&text);
                 remove_code(start, end);
             }
-            // Undo
-            "z" if event.ctrl_key() => state().undo(),
-            // Redo
-            "y" if event.ctrl_key() => state().redo(),
             // Toggle line comment
             "/" if event.ctrl_key() => {
                 let code = code_text();
