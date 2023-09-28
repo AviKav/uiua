@@ -396,10 +396,13 @@ pub fn Editor<'a>(
             "historyRedo" => {
                 state().redo();
             }
-            _ => ()
+            _ => (),
         }
+
+        event.prevent_default();
+        event.stop_propagation();
     });
-    
+
     // Handle key events
     window_event_listener(keydown, move |event| {
         let event = event.dyn_ref::<web_sys::KeyboardEvent>().unwrap();
